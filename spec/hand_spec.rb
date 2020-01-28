@@ -1,69 +1,88 @@
-require File.dirname(__FILE__) + '/spec_helper'
+# frozen_string_literal: true
 
-describe Hand, "score" do
-  before(:each) do
-    @hand = Hand.new
-  end
-  
-  it "should be 7 when dealt 4 and 3" do
-    @hand.deal 7
-    @hand.deal 3
-    @hand.score.should == 10
-  end
+require 'spec_helper'
 
-  it "should be 13 when dealt 8 and 5" do
-    @hand.deal 8
-    @hand.deal 5
-    @hand.score.should == 13
-  end
+describe Hand do
+  subject(:hand) { described_class.new }
 
-  it "should be 17 when dealt 7 and K" do
-    @hand.deal 7
-    @hand.deal :king
-    @hand.score.should == 17
-  end
+  describe '#score' do
+    it do
+      hand.deal 4, 3
+      expect(hand.score).to be(7)
+    end
 
-  it "should be 18 when dealt A and 7" do
-    @hand.deal :ace
-    @hand.deal 7
-    @hand.score.should == 18
-  end
+    it do
+      hand.deal 8, 5
+      expect(hand.score).to be(13)
+    end
 
-  it "should be blackjack when dealt A and K" do
-    @hand.deal :ace
-    @hand.deal :king
-    @hand.should be_blackjack
-  end
+    it do
+      hand.deal 7, 'K'
+      expect(hand.score).to be(17)
+    end
 
-  it "should not be blackjack when dealt A, 7 & 3" do
-    @hand.deal :ace
-    @hand.deal 7
-    @hand.deal 3
-    @hand.should_not be_blackjack
+    it do
+      hand.deal 'A', 7
+      expect(hand.score).to be(18)
+    end
+
+    it do
+      hand.deal 'A', 'A'
+      expect(hand.score).to be(12)
+    end
+
+    it do
+      hand.deal 'A', 'A', 'A', 'A'
+      expect(hand.score).to be(14)
+    end
   end
 
-  it "should be bonus when dealt 7, 7, and 7" do
-    3.times { @hand.deal 7 }
-    @hand.should be_bonus
+  describe '#blackjack?' do
+    it do
+      hand.deal 'A', 'K'
+      expect(hand).to be_blackjack
+    end
+
+    it do
+      hand.deal 'A', 'J'
+      expect(hand).to be_blackjack
+    end
+
+    it do
+      hand.deal 'A', 7, 3
+      expect(hand).not_to be_blackjack
+    end
+
+    it do
+      hand.deal 'J', 'Q'
+      expect(hand).not_to be_blackjack
+    end
   end
 
-  it "should not be bonus when dealt 5, 7, 9" do
-    @hand.deal 5
-    @hand.deal 7
-    @hand.deal 9
-    @hand.should_not be_bonus
-  end
+  describe '#bonus?' do
+    it do
+      hand.deal 7, 7, 7
+      expect(hand).to be_bonus
+    end
 
-  it "should be bonus when dealt 6, 7, 8" do
-    @hand.deal 6
-    @hand.deal 7
-    @hand.deal 8
-    @hand.should be_bonus
-  end
+    it do
+      hand.deal 6, 7, 8
+      expect(hand).to be_bonus
+    end
 
-  it "should be 12 when dealt A, A" do
-    @hand.deal :ace
-    @hand.deal :ace
-    @hand.score.should == 12
+    it do
+      hand.deal 7, 6, 8
+      expect(hand).to be_bonus
+    end
+
+    it do
+      hand.deal 5, 7, 9
+      expect(hand).not_to be_bonus
+    end
+
+    it do
+      hand.deal 'A', 7, 7
+      expect(hand).not_to be_bonus
+    end
   end
 end
